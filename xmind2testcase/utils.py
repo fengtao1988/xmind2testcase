@@ -135,3 +135,9 @@ def xmind_testcase_to_json_file(xmind_file):
         logging.info('Convert XMind file(%s) to a testcase json file(%s) successfully!', xmind_file, testcase_json_file)
 
     return testcase_json_file
+
+
+if __name__ == '__main__':
+    xmind_file = '../webtool/uploads/My FM1.xmind'
+    testsuit_list = get_xmind_testsuite_list(xmind_file)
+    print('Get xmind testsuite list succssfully: %s', testsuit_list)
