@@ -2,12 +2,12 @@
 # _*_ coding:utf-8 _*_
 
 import logging
-from xmind2testcase.metadata import TestSuite, TestCase, TestStep
+from xmind2testcase.metadata import *
 
 config = {'sep': ' ',
-          'valid_sep': '&>+/-',
+          'valid_sep': '&>+/-_',
           'precondition_sep': '\n----\n',
-          'summary_sep': '\n----\n',
+          'note_sep': '\n----\n',
           'ignore_char': '#!！'
           }
 
@@ -131,31 +131,36 @@ def parse_a_testcase(case_dict, parent):
 
     testcase.name = gen_testcase_title(topics)
 
-    preconditions = gen_testcase_preconditions(topics)
-    testcase.preconditions = preconditions if preconditions else '无'
+    testcase.preconditions = gen_testcase_preconditions(topics)
+    if testcase.preconditions.precondition:
+        testcase.preconditions.precondition = testcase.preconditions.precondition
+    else:
+        testcase.preconditions.precondition = '无'
 
-    summary = gen_testcase_summary(topics)
-    testcase.summary = summary if summary else testcase.name
+    execution_type = testcase.preconditions.script  # 预置条件中有script则认为是自动化用例
+    testcase.execution_type = '自动' if execution_type else '手动'
 
     testcase.importance = get_priority(case_dict) or 2
 
-    step_dict_list = case_dict.get('topics', [])
-    if step_dict_list:
-        testcase.steps = parse_test_steps(step_dict_list)
+    action_dict_list = case_dict.get('topics', [])
+    if action_dict_list:
+        testcase.steps = parse_test_actions(action_dict_list)[0]
+        testcase.expects = parse_test_actions(action_dict_list)[1]
+
 
     # the result of the testcase take precedence over the result of the teststep
     testcase.result = get_test_result(case_dict['markers'])
 
-    if testcase.result == 0 and testcase.steps:
-        for step in testcase.steps:
-            if step.result == 2:
+    if testcase.result == 0 and testcase.expects:
+        for expect in testcase.expects:
+            if expect.result == 2:
                 testcase.result = 2
                 break
-            if step.result == 3:
+            if expect.result == 3:
                 testcase.result = 3
                 break
 
-            testcase.result = step.result  # there is no need to judge where test step are ignored
+            testcase.result = expect.result  # there is no need to judge where test step are ignored
 
     logging.debug('finds a testcase: %s', testcase.to_dict())
     return testcase
@@ -183,44 +188,50 @@ def gen_testcase_title(topics):
 
 
 def gen_testcase_preconditions(topics):
-    notes = [topic['note'] for topic in topics]
-    notes = filter_empty_or_ignore_element(notes)
-    return config['precondition_sep'].join(notes)
+    test_pre = TestPre()
+    precondition = [topic['note'] for topic in topics]  # 循环topic ？
+    precondition = filter_empty_or_ignore_element(precondition)
+    test_pre.precondition = config['precondition_sep'].join(precondition)
+    script = [topic['comment'] for topic in topics]
+    script = filter_empty_or_ignore_element(script)
+    test_pre.script = config['note_sep'].join(script)
+    return test_pre
 
 
-def gen_testcase_summary(topics):
-    comments = [topic['comment'] for topic in topics]
-    comments = filter_empty_or_ignore_element(comments)
-    return config['summary_sep'].join(comments)
-
-
-def parse_test_steps(step_dict_list):
+def parse_test_actions(action_dict_list):   # 给测试用例添加单条步骤的编号，并将单条步骤&结果打包成一条用例
     steps = []
+    expects = []
 
-    for step_num, step_dict in enumerate(step_dict_list, 1):
-        test_step = parse_a_test_step(step_dict)
-        test_step.step_number = step_num
+    for action_num, action_dict in enumerate(action_dict_list, 1):
+        test_step = parse_a_test_action(action_dict)[0]
+        test_expect = parse_a_test_action(action_dict)[1]
+        test_step.step_number = test_expect.expect_number = action_num
         steps.append(test_step)
+        expects.append(test_expect)
 
-    return steps
+    return steps,expects
 
 
-def parse_a_test_step(step_dict):
+def parse_a_test_action(step_dict):  # 解析单条测试用例和执行结果
     test_step = TestStep()
-    test_step.actions = step_dict['title']
+    test_expect = TestExpect()
+
+    test_step.action = step_dict['title']
+    test_step.script = step_dict['comment']
 
     expected_topics = step_dict.get('topics', [])
     if expected_topics:  # have expected result
         expected_topic = expected_topics[0]
-        test_step.expectedresults = expected_topic['title']  # one test step action, one test expected result
+        test_expect.expect = expected_topic['title']  # one test step action, one test expected result
+        test_expect.script = expected_topic['comment']
         markers = expected_topic['markers']
-        test_step.result = get_test_result(markers)
+        test_expect.result = get_test_result(markers)
     else:  # only have test step
         markers = step_dict['markers']
-        test_step.result = get_test_result(markers)
+        test_expect.result = get_test_result(markers)
 
-    logging.debug('finds a teststep: %s', test_step.to_dict())
-    return test_step
+    logging.debug('finds a testaction: %s', (test_step.to_dict(),test_expect.to_dict()))
+    return test_step,test_expect
 
 
 def get_test_result(markers):
@@ -240,7 +251,6 @@ def get_test_result(markers):
         result = 0
 
     return result
-
 
 
 
