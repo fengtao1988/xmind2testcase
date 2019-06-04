@@ -12,63 +12,59 @@
     <h1>{{ name }} - Preview</h1>
     <h2>TestSuites: {{ suite_count }} / TestCases: {{ suite | length }}
         / <a href="{{ url_for("download_zentao_file",filename= name) }}">Get Zentao CSV</a>
-        / <a href="{{ url_for("download_testlink_file",filename= name) }}">Get TestLink XML</a>
+<!--        / <a href="{{ url_for("download_testlink_file",filename= name) }}">Get TestLink XML</a>-->
         / <a href="{{ url_for("index") }}">Go Back</a></h2>
 </div>
 <table class="pure-table tests-table">
     <thead>
     <tr>
-        <th width="5%">#</th>
-        <th width="10%">Suite</th>
-        <th>Title</th>
-        <th width="200px">Attributes</th>
-        <th width="23%">Steps</th>
+        <th width="3%">编号</th>
+        <th width="7%">模块</th>
+		<th width="5%">测试类型</th>
+        <th width="15%">用例标题</th>
+        <th width="5%">优先级</th>
+		<th width="15%">预置条件</th>
+        <th>测试步骤</th>
+		<th width="20%">预期结果</th>
+		<th width="5%">执行方式</th>
     </tr>
     </thead>
     <tbody>
     {% for test in suite %}
         <tr>
             <td>{{ loop.index }}</td>
-            <td>{{ test.suite }}</td>
-            <td {% if test.name|length>100 %}class="long-name" {% endif %}>{{ test.name }}
+            <td>{{ test.suite }}</td>    <!-- this Suite(Module) -->
+			<td>null</td>    <!-- this casetype -->
+            <td {% if test.name|length>100 %}class="long-name" {% endif %}>{{ test.name }}     <!-- this Title -->
                 {% if test.name|length>100 %}
                     <span class="long-name-info">Warn: test name might be too long: {{ test.name|length }}!</span>
                 {% endif %}
             </td>
-            <td>
-                <div class="tag-success tooltip">
-                    Priority {{ test.importance }}
-                    <span class="tooltiptext">Priority {{ test.importance }} </span>
-                </div>
-                {% if test.preconditions %}
-                    <div class="pure-button tag-info tooltip">PreCond.
-                        <p class="tooltiptext">
-                            <b>Preconditions:</b> <br>
-                            {{ test.preconditions | replace('\n','<br>') |safe }}
-                        </p></div>
-                {% endif %}
-                {% if test.summary %}
-                    <div class="pure-button tag-warn tooltip">Summary
-                        <p class="tooltiptext">
-                            <b>Summary:</b> <br>
-                            {{ test.summary | replace('\n','<br>') |safe }}
-                        </p></div>
-                {% endif %}
-            <td>
+            <td>  <!-- this Priority -->
+				{{ test.importance }}
+			</td>
+			<td>    <!-- this Preconds -->
+                {{ test.preconditions.precondition | replace('\n','<br>') | safe }}
+            </td>
+            <td>    <!-- this Steps -->
                 {% if test.steps %}
                     <ol>
                         {% for step in test.steps %}
-                            <li>{{ step.actions }}
-                                {% if step.expectedresults %}
-                                    <ul>
-                                        <li>{{ step.expectedresults }}</li>
-                                    </ul>
-                                {% endif %}
-                            </li>
+                            <li>{{ step.action }}</li>
                         {% endfor %}
                     </ol>
                 {% endif %}
             </td>
+			<td>    <!-- this Expects -->
+                {% if test.expects %}
+                    <ol>
+                        {% for expect in test.expects %}
+                            <li>{{ expect.expect }}</li>
+                        {% endfor %}
+                    </ol>
+                {% endif %}
+            </td>
+			<td>{{ test.execution_type }}</td>    <!-- this exetype -->
         </tr>
     {% endfor %}
     </tbody>
