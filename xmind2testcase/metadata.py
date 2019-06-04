@@ -4,9 +4,9 @@
 """
 testlink.testlink
 """
+# 构造测试元数据模板
 
-
-class TestSuite(object):
+class TestSuite(object):  # 构造测试套字典模板
 
     def __init__(self, name='', details='', testcase_list=None, sub_suites=None, statistics=None):
         """
@@ -45,14 +45,13 @@ class TestSuite(object):
         return data
 
 
-class TestCase(object):
+class TestCase(object):   # 构造测试用例字典模板
 
-    def __init__(self, name='', version=1, summary='', preconditions='', execution_type=1, importance=2, estimated_exec_duration=3, status=7, result=0, steps=None):
+    def __init__(self, name=None, version=1, preconditions=None, execution_type='手动', importance=2, estimated_exec_duration=3, status=7, result=0, steps=None, expects=None):
         """
         TestCase
         :param name: test case name
-        :param version: test case version infomation
-        :param summary: test case summary infomation
+        :param version: test case version information
         :param preconditions: test case pre condition
         :param execution_type: manual or automate
         :param importance: high:1, middle:2, low:3
@@ -60,10 +59,10 @@ class TestCase(object):
         :param status: draft:1, ready ro review:2, review in progress:3, rework:4, obsolete:5, future:6, final:7
         :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
         :param steps: test case step list
+        :param expects: test case result list
         """
         self.name = name
         self.version = version
-        self.summary = summary
         self.preconditions = preconditions
         self.execution_type = execution_type
         self.importance = importance
@@ -71,53 +70,102 @@ class TestCase(object):
         self.status = status
         self.result = result
         self.steps = steps
+        self.expects = expects
 
     def to_dict(self):
         data = {
             'name': self.name,
             'version': self.version,  # TODO(devin): get version content
-            'summary': self.summary,
             'preconditions': self.preconditions,
             'execution_type': self.execution_type,
             'importance': self.importance,
             'estimated_exec_duration': self.estimated_exec_duration,  # TODO(devin): get estimated content
             'status': self.status,  # TODO(devin): get status content
             'result': self.result,
-            'steps': []
+            'steps': [],
+            'expects': []
         }
+
+        if self.preconditions:
+            data['preconditions'] = self.preconditions.to_dict()
 
         if self.steps:
             for step in self.steps:
                 data['steps'].append(step.to_dict())
 
+        if self.expects:
+            for expect in self.expects:
+                data['expects'].append(expect.to_dict())
+
         return data
 
 
-class TestStep(object):
+class TestPre(object):  # 构造测试用例预制条件字典模板
 
-    def __init__(self, step_number=1, actions='', expectedresults='', execution_type=1, result=0):
+    def __init__(self, precondition='', script=''):
+        '''
+        TestPre
+        :param precondition: test case precondition
+        :param script: script of test precondition
+        '''
+        self.precondition = precondition
+        self.script = script  # 预留作为自动生成自动化脚本
+
+    def to_dict(self):
+        data = {
+            'precondition': self.precondition,
+            'script': self.script
+        }
+        return data
+
+
+class TestStep(object):   # 构造测试用例步骤字典模板
+
+    def __init__(self, step_number=1, action='', script=''):
         """
         TestStep
         :param step_number: test step number
-        :param actions: test step actions
-        :param expectedresults: test step expected results
-        :param execution_type: test step execution type
-        :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
+        :param action: test step actions
+        :param script: script of teststep
         """
         self.step_number = step_number
-        self.actions = actions
-        self.expectedresults = expectedresults
-        self.execution_type = execution_type  # TODO(devin): get execution type content
-        self.result = result
+        self.action = action
+        self.script = script  # 预留作为自动生成自动化脚本
 
     def to_dict(self):
         data = {
             'step_number': self.step_number,
-            'actions': self.actions,
-            'expectedresults': self.expectedresults,
-            'execution_type': self.execution_type,
-            'result': self.result
+            'action': self.action,
+            'script': self.script
         }
 
         return data
+
+
+class TestExpect(object):   # 构造测试用例预期结果字典模板
+
+    def __init__(self, expect_number=1, expect='', script='', result=0):
+        '''
+        TestExpect
+        :param expect_number:
+        :param expects: test step expected results
+        :param scripts: script of test expect
+        :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
+        '''
+        self.expect_number = expect_number
+        self.expect = expect
+        self.script = script   # 预留作为自动生成自动化脚本
+        self.result = result
+
+    def to_dict(self):
+        data = {
+            'expect_number': self.expect_number,
+            'expect': self.expect,
+            'script': self.script,
+            'result': self.result
+        }
+        return data
+
+
+
 
