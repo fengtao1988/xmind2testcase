@@ -7,7 +7,7 @@ import arrow
 import sqlite3
 from contextlib import closing
 from os.path import join, exists
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 from xmind2testcase.zentao import xmind_to_zentao_csv_file
 from xmind2testcase.testlink import xmind_to_testlink_xml_file
@@ -40,7 +40,8 @@ UPLOAD_FOLDER = os.path.join(here, 'uploads')
 ALLOWED_EXTENSIONS = ['xmind']
 DEBUG = True
 DATABASE = os.path.join(here, 'data.db3')
-HOST = '0.0.0.0'
+HOST = '192.168.10.22'
+PORT = 3000
 
 # flask app
 app = Flask(__name__)
@@ -292,11 +293,11 @@ def app_error(e):
 
 
 def launch(host='127.0.0.1', debug=True, port=5001):
-    app.run(host=host, debug=debug, port=port)
+    app.run(host=HOST, debug=DEBUG, port=PORT)
 
 
 init()  # initializing the database
 
 
 if __name__ == '__main__':
-    app.run(HOST, debug=DEBUG, port=5001)
+    app.run(HOST, debug=DEBUG, port=PORT)
