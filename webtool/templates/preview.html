@@ -34,7 +34,7 @@
         <tr>
             <td>{{ loop.index }}</td>
             <td>{{ test.suite }}</td>    <!-- this Suite(Module) -->
-			<td>null</td>    <!-- this casetype -->
+			<td>{{ test.case_type }}</td>    <!-- this casetype -->
             <td {% if test.name|length>100 %}class="long-name" {% endif %}>{{ test.name }}     <!-- this Title -->
                 {% if test.name|length>100 %}
                     <span class="long-name-info">Warn: test name might be too long: {{ test.name|length }}!</span>
