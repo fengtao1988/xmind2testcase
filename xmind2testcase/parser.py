@@ -11,6 +11,8 @@ config = {'sep': ' ',
           'ignore_char': '#!！'
           }
 
+case_types = ['功能测试', '性能测试', '压力测试', '接口测试', '兼容性测试', '长时间测试', '其他']
+
 
 def xmind_to_testsuites(xmind_content_dict):
     """convert xmind file to `xmind2testcase.metadata.TestSuite` list"""
@@ -129,7 +131,12 @@ def parse_a_testcase(case_dict, parent):
     testcase = TestCase()
     topics = parent + [case_dict] if parent else [case_dict]
 
-    testcase.name = gen_testcase_title(topics)
+    case_nameAndtype = gen_testcase_title(topics)
+    testcase.name = case_nameAndtype[0]
+    testcase.case_type = case_nameAndtype[1]
+
+    # testcase.name = gen_testcase_title(topics)
+    # testcase.case_type = '功能测试'
 
     testcase.preconditions = gen_testcase_preconditions(topics)
     if testcase.preconditions.precondition:
@@ -184,7 +191,12 @@ def gen_testcase_title(topics):
     if separator != ' ':
         separator = ' {} '.format(separator)
 
-    return separator.join(titles)
+    if titles[0] in case_types: # 标题下的节点为测试类型，则提取测试类型，否则默认为功能测试
+        case_type = titles[0]
+        return separator.join(titles[1:]),case_type
+    else:
+        case_type = '功能测试'
+        return separator.join(titles),case_type
 
 
 def gen_testcase_preconditions(topics):

@@ -47,7 +47,7 @@ class TestSuite(object):  # 构造测试套字典模板
 
 class TestCase(object):   # 构造测试用例字典模板
 
-    def __init__(self, name=None, version=1, preconditions=None, execution_type='手动', importance=2, estimated_exec_duration=3, status=7, result=0, steps=None, expects=None):
+    def __init__(self, name=None, version=1, preconditions=None, execution_type='手动', importance=2, estimated_exec_duration=3, status=7, result=0, steps=None, expects=None, case_type='功能测试'):
         """
         TestCase
         :param name: test case name
@@ -60,6 +60,7 @@ class TestCase(object):   # 构造测试用例字典模板
         :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
         :param steps: test case step list
         :param expects: test case result list
+        :param case_type: test case type
         """
         self.name = name
         self.version = version
@@ -71,6 +72,7 @@ class TestCase(object):   # 构造测试用例字典模板
         self.result = result
         self.steps = steps
         self.expects = expects
+        self.case_type = case_type
 
     def to_dict(self):
         data = {
@@ -83,7 +85,8 @@ class TestCase(object):   # 构造测试用例字典模板
             'status': self.status,  # TODO(devin): get status content
             'result': self.result,
             'steps': [],
-            'expects': []
+            'expects': [],
+            'case_type': self.case_type
         }
 
         if self.preconditions:
