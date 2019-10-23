@@ -41,7 +41,7 @@ ALLOWED_EXTENSIONS = ['xmind']
 DEBUG = True
 DATABASE = os.path.join(here, 'data.db3')
 HOST = '192.168.10.22'
-PORT = 3000
+PORT = 3001
 
 # flask app
 app = Flask(__name__)

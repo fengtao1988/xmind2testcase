@@ -18,7 +18,7 @@ def xmind_to_zentao_csv_file(xmind_file):
     logging.info('Start converting XMind file(%s) to zentao file...', xmind_file)
     testcases = get_xmind_testcase_list(xmind_file)
 
-    fileheader = ["所属模块", "用例标题", "前置条件", "步骤", "预期", "关键词", "优先级", "用例类型","用例状态"]
+    fileheader = ["所属模块", "用例类型", "相关需求", "用例标题", "优先级", "前置条件", "步骤", "预期", "关键词", "用例状态"]
     zentao_testcase_rows = [fileheader]
     for testcase in testcases:
         row = gen_a_testcase_row(testcase)
@@ -45,9 +45,10 @@ def gen_a_testcase_row(testcase_dict):
     case_keyword = testcase_dict['execution_type']  # fengtao：indicate case is manual or auto exec
     #case_priority = gen_case_priority(testcase_dict['importance']) # fengtao：zentao version is low,use number as priority
     case_priority = testcase_dict['importance']
-    case_type = ''   # fengtao：to do
+    case_type = testcase_dict['case_type']
     case_status = '正常'
-    row = [case_module, case_title, case_precondition, case_step, case_expected_result, case_keyword, case_priority, case_type,case_status]
+    case_req = testcase_dict['case_req']
+    row = [case_module, case_type, case_req, case_title, case_priority, case_precondition, case_step, case_expected_result, case_keyword, case_status]
     return row
 
 

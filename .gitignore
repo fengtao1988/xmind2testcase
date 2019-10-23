@@ -1,6 +1,6 @@
 .DS_Store
 .idea
-
+/venv
 # build
 *.egg
 *.egg-info

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
 
-import logging
+import logging,re
 from xmind2testcase.metadata import *
 
 config = {'sep': ' ',
@@ -131,12 +131,10 @@ def parse_a_testcase(case_dict, parent):
     testcase = TestCase()
     topics = parent + [case_dict] if parent else [case_dict]
 
-    case_nameAndtype = gen_testcase_title(topics)
-    testcase.name = case_nameAndtype[0]
-    testcase.case_type = case_nameAndtype[1]
-
-    # testcase.name = gen_testcase_title(topics)
-    # testcase.case_type = '功能测试'
+    casetitle = gen_testcase_title(topics)
+    testcase.name = casetitle[0]
+    testcase.case_type = casetitle[1]
+    testcase.case_req = casetitle[2]
 
     testcase.preconditions = gen_testcase_preconditions(topics)
     if testcase.preconditions.precondition:
@@ -193,10 +191,21 @@ def gen_testcase_title(topics):
 
     if titles[0] in case_types: # 标题下的节点为测试类型，则提取测试类型，否则默认为功能测试
         case_type = titles[0]
-        return separator.join(titles[1:]),case_type
-    else:
+        if re.search(r'\(#\d+\)',titles[1]):
+            case_req = titles[1]
+            case_title = separator.join(titles[2:])
+        else:
+            case_req = '无'
+            case_title = separator.join(titles[1:])
+    elif re.search(r'\(#\d+\)',titles[0]): # 标题下的节点为测试需求，则提取为测试需求，测试需求格式一般为(#xxx)，e.g：测试需求(#123)
         case_type = '功能测试'
-        return separator.join(titles),case_type
+        case_req = titles[0]
+        case_title = separator.join(titles[1:])
+    else: # 标题下的节点非测试类型和测试需求，则转化为测试标题
+        case_type = '功能测试'
+        case_req = '无'
+        case_title = separator.join(titles)
+    return case_title,case_type,case_req
 
 
 def gen_testcase_preconditions(topics):
